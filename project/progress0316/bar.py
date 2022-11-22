@@ -1,4 +1,4 @@
-from time import time as ltime1234567
+from time import time as ltime0316
 
 class ProgressBar():
     __fill = '█'
@@ -6,15 +6,18 @@ class ProgressBar():
     def __init__(self, iterations, barLength = 40):
         self.__iterations = iterations
         self.__counter = 0
-        self.__start = ltime1234567()
+        self.__start = ltime0316()
         self.__end = False
         self.__total_time = 0
         self.__frequency = 1
         self.__freq10 = 1
         self.__bar_length = barLength-1
+
+        self.__last_counter = 0
+        self.__last_time = self.__start
     
     def __fill_fun(self, val):
-        if val<0.001: return '█'
+        if val==0.0: return '█'
         if val<0.125: return '▏'
         if val<0.25: return '▎'
         if val<0.375: return '▍'
@@ -25,12 +28,16 @@ class ProgressBar():
         return '█'
 
     def __update(self):
+        this_time = ltime0316()
+        deltaIter = self.__counter - self.__last_counter
+        deltaTime = this_time - self.__last_time
         percent = 100*(self.__counter / float(self.__iterations))
-        self.__total_time = ltime1234567() - self.__start
-        self.__frequency = self.__counter / self.__total_time
+        self.__total_time = this_time - self.__start
+        self.__frequency = deltaIter / deltaTime
         self.__freq10 = int(self.__frequency / 10)
+
         if self.__freq10 == 0: self.__freq10 = 1
-        eta = int((100.0/percent)*self.__total_time) - int(self.__total_time)
+        eta = int((self.__iterations-self.__counter) / self.__frequency)
         mins = ""
         if eta >= 60:
             mins = eta//60
@@ -54,6 +61,11 @@ class ProgressBar():
             else:
                 totalTime = str(int(self.__total_time)) + " seconds"
             print(f'\r{bar} [100.00]% (total time: {totalTime})'+(20)*" ")
+        self.__last_counter = self.__counter
+        self.__last_time = this_time
+        
+    def reset(self, iterations, barLength = 40):
+        self.__init__(iterations, barLength)
 
     def next(self):
         self.__counter += 1
@@ -70,5 +82,3 @@ class ProgressBar():
                     self.__update()
             elif self.__counter <= 10:
                 self.__update()
-
-def bar(iterations): return ProgressBar(iterations)
